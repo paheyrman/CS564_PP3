@@ -52,9 +52,10 @@ def render_template(template_name, **context):
 
 urls = ('/currtime', 'curr_time',
         '/selecttime', 'select_time',
-        '/add_bid', 'add_bid',
+        '/add_bid', 'place_bid',
         '/appbase', 'appbase',
-        '/search', 'search')
+        '/search', 'auction_search',
+        '/', 'curr_time')
 
 class curr_time:
     # A simple GET request, to '/currtime'

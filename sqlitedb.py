@@ -61,6 +61,7 @@ def update_auction_time(curr_time):
     try: db.update('CurrentTime', where = 'Time = $Time', vars = { 'Time': getTime() }, Time = curr_time)
     except Exception as timeEx: 
         t.rollback() 
+        print(str(timeEx))
         raise Exception
     else: t.commit()
 
