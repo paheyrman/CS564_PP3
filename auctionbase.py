@@ -149,6 +149,18 @@ class place_bid:
             successful_bid = '(Congratulations! You have placed a bid on item: %s of amount: %s.)' % (curr_item.Name,Amount)
             return render_template('add_bid.html', message = 'successful_bid')
 
+class auction_search:
+
+    def GET(self):
+        return render_template('search.html')
+
+    def POST(self):
+        post_params = web.input()
+        itemID = post_params['itemID']
+        userID = post_params['userID']
+        category = post_params['category']
+        
+
 
 ###########################################################################################
 ##########################DO NOT CHANGE ANYTHING BELOW THIS LINE!##########################
