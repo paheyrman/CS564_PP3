@@ -95,24 +95,6 @@ class select_time:
             print(str(timeEx))
         return render_template('select_time.html', message = update_message)
 
-class auction_search:
-
-    def GET(self):
-        return render_template('search.html')
-
-    def POST(self):
-        post_params = web.input()
-        itemID = post_params['itemID']
-        userID = post_params['userID']
-        category = post_params['category']
-        description = post_params['description']
-        minPrice = post_params['minPrice']
-        maxPrice = post_params['maxPrice']
-
-        val = sqlitedb.auction_search(itemID, userID, category, description, minPrice, maxPrice)
-        print(val)
-        return render_template('search.html', search_result = val)
-
 class place_bid:
 
     def GET(self):
@@ -153,24 +135,37 @@ class place_bid:
             return render_template('add_bid.html', message = 'Unable to place bid, amount specified is invalid.')
         #Verify the item has a buy price, if buy price is met close the auction
         elif curr_item.Buy_Price is not None and Amount >= curr_item.Buy_Price:
-            curr_item.Number_of_Bids += 1
-            curr_item.Currently = Amount
             sqlitedb.close_auction(itemID,userID,Amount)
             successful_purchase = '(Congratulations! You have purchased item: %s for amount: %s.)' % (curr_item.Name,Amount)
             return render_template('add_bid.html', message = 'successful_purchase')
         #Verified no errors exist, place a new bid on the item for the amount specified
         else:
-            curr_item.Number_of_Bids += 1
-            curr_item.Currently = Amount
             sqlitedb.new_bid(itemID,userID,Amount)
             successful_bid = '(Congratulations! You have placed a bid on item: %s of amount: %s.)' % (curr_item.Name,Amount)
             return render_template('add_bid.html', message = 'successful_bid')
 
 
+class auction_search:
 
+    def GET(self):
+        return render_template('search.html')
 
+    def POST(self):
+        post_params = web.input()
+        itemID = post_params['itemID']
+        userID = post_params['userID']
+        minPrice = post_params['minPrice']
+        maxPrice = post_params['maxPrice']
 
+        if itemID is not None: 
+            category = sqlitedb.getCategoryById(itemID)
+            description = sqlitedb.getDescriptionById(itemID)
 
+        print(category)
+        print(description)
+
+        val = sqlitedb.auction_search(itemID, userID, category, description, minPrice, maxPrice)
+        return render_template('search.html', search_result = val)
 
 ###########################################################################################
 ##########################DO NOT CHANGE ANYTHING BELOW THIS LINE!##########################
