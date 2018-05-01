@@ -95,23 +95,6 @@ class select_time:
             print(str(timeEx))
         return render_template('select_time.html', message = update_message)
 
-class auction_search:
-
-    def GET(self):
-        return render_template('search.html')
-
-    def POST(self):
-        post_params = web.input()
-        itemID = post_params['itemID']
-        userID = post_params['userID']
-        category = post_params['category']
-        description = post_params['description']
-        minPrice = post_params['minPrice']
-        maxPrice = post_params['maxPrice']
-
-        val = sqlitedb.auction_search(itemID, userID, category, description, minPrice, maxPrice)
-        print(val)
-        return render_template('search.html', search_result = val)
 
 class place_bid:
 
@@ -167,11 +150,23 @@ class place_bid:
             return render_template('add_bid.html', message = 'successful_bid')
 
 
+class auction_search:
 
+    def GET(self):
+        return render_template('search.html')
 
+    def POST(self):
+        post_params = web.input()
+        itemID = post_params['itemID']
+        userID = post_params['userID']
+        category = post_params['category']
+        description = post_params['description']
+        minPrice = post_params['minPrice']
+        maxPrice = post_params['maxPrice']
+        status = post_params['status']
 
-
-
+        val = sqlitedb.auction_search(itemID, userID, category, description, minPrice, maxPrice, status)
+        return render_template('search.html', search_result = val)
 ###########################################################################################
 ##########################DO NOT CHANGE ANYTHING BELOW THIS LINE!##########################
 ###########################################################################################
