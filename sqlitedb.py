@@ -48,12 +48,18 @@ def getUserByID(user_id):
     except IndexError: return None
 
 def auction_search(itemID, userID, category, description, minPrice, maxPrice):
-    st = '%'
-    query_string = 'select * from Items, Categories where (Categories.ItemID = Items.ItemID) AND (IFNULL($category, "") = "" OR $category = Categories.category) AND (IFNULL($itemID, "") = "" OR $itemID = Items.ItemID) AND (IFNULL($userID, "") = "" OR $userID = Items.Seller_UserID) AND (Items.Description LIKE $st$description$st)'
+    if description is None: 
+        description = '%%'
+    else: description = '%' + description + '%'
+    if minPrice == '':
+        minPrice = 0;
+    if maxPrice == '':
+        maxPrice = 999999999999999999;
+    query_string = 'select * from Items, Categories where (Categories.ItemID = Items.ItemID) AND (IFNULL($category, "") = "" OR $category = Categories.category) AND (IFNULL($itemID, "") = "" OR $itemID = Items.ItemID) AND (IFNULL($userID, "") = "" OR $userID = Items.Seller_UserID) AND (Items.Description LIKE $description) AND (IFNULL(Items.Currently, Items.First_Bid) >= $minPrice)AND (IFNULL(Items.Currently, Items.First_Bid) <= $maxPrice)'
     #query_string = 'select * from Items, Categories where (Categories.ItemID = Items.ItemID) AND (IFNULL($category, "") = "" OR $category = Categories.category) AND (IFNULL($itemID, "") = "" OR $itemID = Items.ItemID) AND (IFNULL($userID, "") = "" OR $userID = Items.Seller_UserID) AND (IFNULL($description,"") = "" OR Contains(Items.Description, $description)) AND (IFNULL(Items.Currently, Items.First_Bid) >= IFNULL($minPrice,0) AND (IFNULL(Items.Currently, Items.First_Bid) <= IFNULL($maxPrice, 99999999999)'
     #result = query(query_string, {'category': category, 'itemID':itemID, 'userID':userID, 'description':description, 'minPrice':minPrice, 'maxPrice':maxPrice})
-    result = query(query_string, {'category': category, 'itemID': itemID, 'userID': userID, 'st': st, 'description': description });
-    try: return result[0], result[1], result[2]
+    result = query(query_string, {'category': category, 'itemID': itemID, 'userID': userID, 'description': description, 'minPrice': minPrice, 'maxPrice': maxPrice });
+    try: return result[0], result[1], result[2], result[3]
     except IndexError: return None
 
 
