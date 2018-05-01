@@ -47,6 +47,16 @@ def getUserByID(user_id):
     try: return result[0]
     except IndexError: return None
 
+def auction_search(itemID, userID, category, description, minPrice, maxPrice):
+    st = '%'
+    query_string = 'select * from Items, Categories where (Categories.ItemID = Items.ItemID) AND (IFNULL($category, "") = "" OR $category = Categories.category) AND (IFNULL($itemID, "") = "" OR $itemID = Items.ItemID) AND (IFNULL($userID, "") = "" OR $userID = Items.Seller_UserID) AND (Items.Description LIKE $st$description$st)'
+    #query_string = 'select * from Items, Categories where (Categories.ItemID = Items.ItemID) AND (IFNULL($category, "") = "" OR $category = Categories.category) AND (IFNULL($itemID, "") = "" OR $itemID = Items.ItemID) AND (IFNULL($userID, "") = "" OR $userID = Items.Seller_UserID) AND (IFNULL($description,"") = "" OR Contains(Items.Description, $description)) AND (IFNULL(Items.Currently, Items.First_Bid) >= IFNULL($minPrice,0) AND (IFNULL(Items.Currently, Items.First_Bid) <= IFNULL($maxPrice, 99999999999)'
+    #result = query(query_string, {'category': category, 'itemID':itemID, 'userID':userID, 'description':description, 'minPrice':minPrice, 'maxPrice':maxPrice})
+    result = query(query_string, {'category': category, 'itemID': itemID, 'userID': userID, 'st': st, 'description': description });
+    try: return result[0], result[1], result[2]
+    except IndexError: return None
+
+
 # wrapper method around web.py's db.query method
 # check out http://webpy.org/cookbook/query for more info
 def query(query_string, vars = {}):
@@ -82,7 +92,6 @@ def close_auction(curr_item, curr_user, curr_amount):
         t.rollback 
         print(str(bidEx))
     else: t.commit()
-
 
 
 
