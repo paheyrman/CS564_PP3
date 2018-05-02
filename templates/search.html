@@ -47,8 +47,13 @@
 	{% for key in result %}
 		<div>
 			<span>{{ key|e }}</span>
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<span>{{ result[key]|e }}</span>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<span>{{ result[key]|e }}</span>
+				{% if  key|e  == "ItemID" %}
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<a href="items?id={{result[key]|e}}">View Auction</a>
+				{% else %}
+				{% endif %}
 		</div>
   	{% endfor %}
   	<div>--------</div>
