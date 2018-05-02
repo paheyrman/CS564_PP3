@@ -76,9 +76,24 @@ def auction_search(itemID, userID, category, description, minPrice, maxPrice, st
     if description is None: description = '%%'
     else: description = '%' + description + '%'
     if minPrice == '': minPrice = 0;
+    else: minPrice = int(minPrice)
     if maxPrice == '': maxPrice = 999999999999999999;
+    else: maxPrice = int(maxPrice)
+
+    if status == 'open':
+        query_string = 'select *, group_concat(category,", ") as Category from Items, Categories, CurrentTime where (Categories.ItemID = Items.ItemID) AND (IFNULL($category, "") = "" OR $category = Categories.category) AND (IFNULL($itemID, "") = "" OR $itemID = Items.ItemID) AND (IFNULL($userID, "") = "" OR $userID = Items.Seller_UserID) AND (Items.Description LIKE $description) AND (IFNULL(Items.Currently, Items.First_Bid) >= $minPrice) AND (IFNULL(Items.Currently, Items.First_Bid) <= $maxPrice) AND (Items.Started <= CurrentTime.Time AND Items.Ends >= CurrentTime.Time) group by Items.ItemID'
+    if status == 'close':
+        query_string = 'select *, group_concat(category,", ") as Category from Items, Categories, CurrentTime where (Categories.ItemID = Items.ItemID) AND (IFNULL($category, "") = "" OR $category = Categories.category) AND (IFNULL($itemID, "") = "" OR $itemID = Items.ItemID) AND (IFNULL($userID, "") = "" OR $userID = Items.Seller_UserID) AND (Items.Description LIKE $description) AND (IFNULL(Items.Currently, Items.First_Bid) >= $minPrice) AND (IFNULL(Items.Currently, Items.First_Bid) <= $maxPrice) AND (Items.Started > CurrentTime.Time OR Items.Ends < CurrentTime.Time) group by Items.ItemID'
+    if status == 'notStarted': 
+        query_string = 'select *, group_concat(category,", ") as Category from Items, Categories, CurrentTime where (Categories.ItemID = Items.ItemID) AND (IFNULL($category, "") = "" OR $category = Categories.category) AND (IFNULL($itemID, "") = "" OR $itemID = Items.ItemID) AND (IFNULL($userID, "") = "" OR $userID = Items.Seller_UserID) AND (Items.Description LIKE $description) AND (IFNULL(Items.Currently, Items.First_Bid) >= $minPrice) AND (IFNULL(Items.Currently, Items.First_Bid) <= $maxPrice) AND (Items.Started > CurrentTime.Time) group by Items.ItemID'
+    if status == 'all':
+        query_string = 'select *, group_concat(category,", ") as Category from Items, Categories, CurrentTime where (Categories.ItemID = Items.ItemID) AND (IFNULL($category, "") = "" OR $category = Categories.category) AND (IFNULL($itemID, "") = "" OR $itemID = Items.ItemID) AND (IFNULL($userID, "") = "" OR $userID = Items.Seller_UserID) AND (Items.Description LIKE $description) AND (IFNULL(Items.Currently, Items.First_Bid) >= $minPrice) AND (IFNULL(Items.Currently, Items.First_Bid) <= $maxPrice) group by Items.ItemID'
     
-    query_string = 'select *, group_concat(category,", ") as Category from Items, Categories where (Categories.ItemID = Items.ItemID) AND (IFNULL($category, "") = "" OR $category = Categories.category) AND (IFNULL($itemID, "") = "" OR $itemID = Items.ItemID) AND (IFNULL($userID, "") = "" OR $userID = Items.Seller_UserID) AND (Items.Description LIKE $description) AND (IFNULL(Items.Currently, Items.First_Bid) >= $minPrice) AND (IFNULL(Items.Currently, Items.First_Bid) <= $maxPrice) group by Items.ItemID'
-    result = query(query_string, {'category': category, 'itemID': itemID, 'userID': userID, 'description': description, 'minPrice': minPrice, 'maxPrice': maxPrice });
+    result = query(query_string, {'category': category, 'itemID': itemID, 'userID': userID, 'description': description, 'minPrice': minPrice, 'maxPrice': maxPrice});
     try: return result
     except IndexError: return None
+
+
+
+
+
