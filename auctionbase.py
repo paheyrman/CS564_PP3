@@ -62,7 +62,18 @@ class selected_item:
      def GET(self):
         post_params = web.input()
         auction_id = post_params['id']
-        return render_template('items.html', id = auction_id)
+        val = sqlitedb.auction_search(auction_id, "", "", "", "", "", "")
+        Name = val[0]['Name']
+        Category = val[0]['Category']
+        Ends = val[0]['Ends']
+        Started = val[0]['Started']
+        Number_of_Bids = val[0]['Number_of_Bids']
+        Seller = val[0]['Seller_UserID']
+        Description = val[0]['Description']
+        print(Name)
+
+
+        return render_template('items.html', id = auction_id, search_result = val, Name = Name, Category = Category, Ends = Ends, Started = Started, Number_of_Bids = Number_of_Bids, Seller = Seller, Description = Description)
 
 class curr_time:
     # A simple GET request, to '/currtime'
