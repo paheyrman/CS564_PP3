@@ -1,7 +1,25 @@
 {% extends "app_base.html" %}
 {% block content %}
 {# include the first two lines above to extend the app_base template #}
-  <h3>Auction Stats</h3> 
-  <div class="alert alert-info">Auction ID is: {{ id }}</div>
+  <h2>Auction Stats</h3> 
+  <div style="background-color:lightblue">
+  	<h3>{{ Name }}
+  		<h4>
+  			Seller: {{ Seller }}   		</h5></h4>
+  	<div style="background-color:WhiteSmoke">
+  	<p style="background-color:WhiteSmoke">
+  		Started: {{Started}}
+  	</p>
+  	<p style="background-color:WhiteSmoke">
+  		Ends: {{Ends}}
+  		</h5>
+  	<p style="background-color:WhiteSmoke">
+  		Description: {{Description}}
+  	</p>
+  	<div>
+  	<h5 style="background-color:Beige">
+  		Categories: {{Category}}
+  	</h5>
+</div>
 {# also make sure to include this very last line as well #}
 {% endblock %}
