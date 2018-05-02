@@ -55,7 +55,14 @@ urls = ('/currtime', 'curr_time',
         '/add_bid', 'place_bid',
         '/appbase', 'appbase',
         '/search', 'auction_search',
+        '/items', 'selected_item',
         '/', 'curr_time')
+
+class selected_item:
+     def GET(self):
+        post_params = web.input()
+        auction_id = post_params['id']
+        return render_template('items.html', id = auction_id)
 
 class curr_time:
     # A simple GET request, to '/currtime'
@@ -176,3 +183,4 @@ if __name__ == '__main__':
     app = web.application(urls, globals())
     app.add_processor(web.loadhook(sqlitedb.enforceForeignKey))
     app.run()
+
