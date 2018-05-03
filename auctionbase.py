@@ -59,21 +59,33 @@ urls = ('/currtime', 'curr_time',
         '/', 'auction_search')
 
 class selected_item:
+
      def GET(self):
         post_params = web.input()
-        auction_id = post_params['id']
-        val = sqlitedb.auction_search(auction_id, "", "", "", "", "", "all")
-        Name = val[0]['Name']
-        Category = val[0]['Category']
-        Ends = val[0]['Ends']
-        Started = val[0]['Started']
-        Number_of_Bids = val[0]['Number_of_Bids']
-        Seller = val[0]['Seller_UserID']
-        Description = val[0]['Description']
-        print(Name)
-        print(Number_of_Bids)
+        itemID = post_params['id']
+        item = sqlitedb.getItemById(itemID)
+        categories = sqlitedb.getCategoryById(itemID)
+        bids = sqlitedb.getBidById(itemID)
+        ended = False
+
+        if item.Started <= sqlitedb.getTime() and item.Ends >= sqlitedb.getTime(): status = 'Currently Open'
+        elif item.Started > sqlitedb.getTime(): status = 'Has Not Started'
+        else: status = 'Closed'
+        if item.Number_of_Bids == 0: 
+            noBids = True
+            winner = ""
+        else: 
+            noBids = False
+            winner = sqlitedb.getWinnerById(itemID).UserID
         
-        return render_template('items.html', id = auction_id, search_result = val, Name = Name, Category = Category, Ends = Ends, Started = Started, Number_of_Bids = Number_of_Bids, Seller = Seller, Description = Description)
+        if item.Buy_Price is not None:
+            if status == 'Closed' or float(item.Currently) >= float(item.Buy_Price):
+                status = 'Closed'
+                ended = True
+        elif status == 'Closed':
+            ended = True
+        
+        return render_template('items.html', id = itemID, bids = bids, Name = item.Name, Category = categories.Category, Ends = item.Ends, Started = item.Started, Number_of_Bids = item.Number_of_Bids, Seller = item.Seller_UserID, Description = item.Description, Currently = item.Currently, noBids = noBids, ended = ended, Status = status, Winner = winner)
 
 class curr_time:
     # A simple GET request, to '/currtime'
@@ -112,60 +124,6 @@ class select_time:
             update_message = 'Unable to update time, time value selected is not valid'
             print(str(timeEx))
         return render_template('select_time.html', message = update_message)
-
-
-class place_bid:
-
-    def GET(self):
-        return render_template('add_bid.html')
-
-    def POST(self):
-        post_params = web.input()
-        itemID = post_params['itemID']
-        userID = post_params['userID']
-        Amount = post_params['price']
-
-        #Verify the correct search criteria was entered
-        if itemID == '' or userID == '' or Amount == '':
-            #If not entered, prompt user to conduct a new search with the appropriate values entered
-            return render_template('add_bid.html', message = 'Invalid search criteria, ensure ItemID, UserID, Amount are valid.')
-        else:
-            #If entered, obtain the item and user information specified by the search criteria
-            curr_item = sqlitedb.getItemById(itemID)
-            curr_user = sqlitedb.getUserById(userID)
-
-        #Verify the item is valid in the database
-        if curr_item is None:
-            return render_template('add_bid.html', message = 'Unable to find item, ItemID is invalid.')
-        #Verify the user is valid in the database
-        elif curr_user is None:
-            return render_template('add_bid.html', message = 'Unable to find user, UserID is invalid.')
-        #Vefify the user is not bidding on an item they are also selling
-        elif curr_user == curr_item.Seller_UserID:
-            return render_template('add_bid.html', message = 'Unable to place bid, users may not bid on items they are selling.')
-        #Verify the auction has not concluded
-        elif string_to_time(sqlitedb.getTime()) >= string_to_time(curr_item.Ends):
-            return render_template('add_bid.html', message = 'Unable to place bid, auction has ended.')
-        #Verify the auction has begun
-        elif string_to_time(sqlitedb.getTime()) < string_to_time(curr_item.Started):
-            return render_template('add_bid.html', message = 'Unable to place bid, auction has not started.')
-        #Verify a valid bid amount was entered
-        elif Amount < 0 or Amount <= curr_item.First_Bid or Amount <= curr_item.Currently:
-            return render_template('add_bid.html', message = 'Unable to place bid, amount specified is invalid.')
-        #Verify the item has a buy price, if buy price is met close the auction
-        elif curr_item.Buy_Price is not None and Amount >= curr_item.Buy_Price:
-            curr_item.Number_of_Bids += 1
-            curr_item.Currently = Amount
-            sqlitedb.close_auction(itemID,userID,Amount)
-            successful_purchase = '(Congratulations! You have purchased item: %s for amount: %s.)' % (curr_item.Name,Amount)
-            return render_template('add_bid.html', message = 'successful_purchase')
-        #Verified no errors exist, place a new bid on the item for the amount specified
-        else:
-            curr_item.Number_of_Bids += 1
-            curr_item.Currently = Amount
-            sqlitedb.new_bid(itemID,userID,Amount)
-            successful_bid = '(Congratulations! You have placed a bid on item: %s of amount: %s.)' % (curr_item.Name,Amount)
-            return render_template('add_bid.html', message = 'successful_bid')
 
 
 class auction_search:
@@ -228,7 +186,7 @@ class select_time:
         enter_name = post_params['entername']
 
         selected_time = '%s-%s-%s %s:%s:%s' % (yyyy, MM, dd, HH, mm, ss)
-        update_message = '(Hello, %s. Previously selected time was: %s.)' % (enter_name, selected_time)
+        update_message = '(Hello, %s. Previously selected time was: %s.)' % (enter_name, sqlitedb.getTime())
         try: sqlitedb.update_auction_time(selected_time)
         except Exception as timeEx: 
             update_message = 'Unable to update time, time value selected is not valid'
@@ -255,13 +213,6 @@ class place_bid:
             #If entered, obtain the item and user information specified by the search criteria
             curr_item = sqlitedb.getItemById(itemID)
             curr_user = sqlitedb.getUserById(userID)
-
-            print(Amount)
-            print(curr_item.Currently)
-
-        if Amount <= curr_item.Currently:
-            print("yes it is")
-
         #Verify the item is valid in the database
         if curr_item is None:
             return render_template('add_bid.html', message = 'Unable to find item, ItemID is invalid.')
@@ -278,16 +229,16 @@ class place_bid:
         elif string_to_time(sqlitedb.getTime()) < string_to_time(curr_item.Started):
             return render_template('add_bid.html', message = 'Unable to place bid, auction has not started.')
         #Verify a valid bid amount was entered
-        elif int(Amount) < 0 or int(Amount) <= curr_item.First_Bid or int(Amount) <= curr_item.Currently:
+        elif float(Amount) < 0 or float(Amount) <= float(curr_item.First_Bid) or float(Amount) <= float(curr_item.Currently):
             return render_template('add_bid.html', message = 'Unable to place bid, amount specified is invalid.')
         #Verify the item has a buy price, if buy price is met close the auction
-        elif curr_item.Buy_Price is not None and int(Amount) >= curr_item.Buy_Price:
-            successful_purchase = 'Congratulations! You have purchased item: %s for amount: %s.' % (curr_item.Name,Amount)
-            return render_template('add_bid.html', message = successful_purchase, add_result = sqlitedb.close_auction(itemID,userID,Amount))
+        if curr_item.Buy_Price is not None:
+            if float(Amount) >= float(curr_item.Buy_Price):
+                successful_purchase = 'Congratulations! You have purchased item: %s for amount: %s.' % (curr_item.Name,Amount)
+                return render_template('add_bid.html', message = successful_purchase, add_result = sqlitedb.close_auction(itemID,userID,Amount))
         #Verified no errors exist, place a new bid on the item for the amount specified
-        else:
-            successful_bid = 'Congratulations! You have placed a bid on item: %s of amount: %s.' % (curr_item.Name,Amount)
-            return render_template('add_bid.html', message = successful_bid, add_result = sqlitedb.new_bid(itemID,userID,Amount))
+        successful_bid = 'Congratulations! You have placed a bid on item: %s of amount: %s.' % (curr_item.Name,Amount)
+        return render_template('add_bid.html', message = successful_bid, add_result = sqlitedb.new_bid(itemID,userID,Amount))
 
 
 class auction_search:
