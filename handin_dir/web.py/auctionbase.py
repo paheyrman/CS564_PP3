@@ -99,9 +99,18 @@ class selected_item:
                 ended = True
                 hasBuyPrice = True
                 buyPrice = item.Buy_Price
+            elif status == 'Currently Open':
+                buyPrice = ""
+            elif status == 'Has Not Started':
+                buyPrice == ""
         elif status == 'Closed':
             ended = True
             buyPrice = ""
+        elif status == 'Currently Open':
+            buyPrice = ""
+        elif status == 'Has Not Started':
+            buyPrice == ""
+	    
         
         return render_template('items.html', id = itemID, bids = bids, Name = item.Name, Category = categories.Category, Ends = item.Ends, Started = item.Started, Number_of_Bids = item.Number_of_Bids, Seller = item.Seller_UserID, Description = item.Description, Currently = item.Currently, noBids = noBids, ended = ended, Status = status, Winner = winner, buyPrice = buyPrice, hasBuyPrice = hasBuyPrice)
 
