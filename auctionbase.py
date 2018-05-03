@@ -1,3 +1,15 @@
+###########################################################################################
+# Authors: Benjamin Charles 9071177506
+#          Paul Heyrman     9071315551
+#          Noah Krause      9071587712
+###########################################################################################
+# Description: This is the main front end to our AuctionDatabase website. This website 
+#              allows users to search for and make bids on ebay items stored on the 
+#              database. This file contains methods to view the current time, set the
+#              current time, search the database, and bid on items within the database.
+#              auctionbase.py calls functions in sqlitedb.py to execute queries related to
+#              this functionality.
+###########################################################################################
 #!/usr/bin/env python
 
 import sys; sys.path.insert(0, 'lib')
@@ -83,6 +95,9 @@ class selected_item:
             if status == 'Closed' or float(item.Currently) >= float(item.Buy_Price):
                 status = 'Closed'
                 ended = True
+                hasBuyPrice = True
+                buyPrice = item.Buy_Price
+            else:
                 hasBuyPrice = True
                 buyPrice = item.Buy_Price
         elif status == 'Closed':
@@ -239,7 +254,7 @@ class place_bid:
         if curr_item.Buy_Price is not None:
             if float(Amount) >= float(curr_item.Buy_Price):
                 successful_purchase = 'Congratulations! You have purchased item: %s for amount: %s.' % (curr_item.Name,Amount)
-                return render_template('add_bid.html', message = successful_purchase, add_result = sqlitedb.close_auction(itemID,userID,Amount))
+                return render_template('add_bid.html', message = successful_purchase, add_result = sqlitedb.new_bid(itemID,userID,Amount))
         #Verified no errors exist, place a new bid on the item for the amount specified
         successful_bid = 'Congratulations! You have placed a bid on item: %s of amount: %s.' % (curr_item.Name,Amount)
         return render_template('add_bid.html', message = successful_bid, add_result = sqlitedb.new_bid(itemID,userID,Amount))

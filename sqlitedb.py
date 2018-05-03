@@ -1,3 +1,13 @@
+###########################################################################################
+# Authors: Benjamin Charles 9071177506
+#          Paul Heyrman     9071315551
+#          Noah Krause      9071587712
+###########################################################################################
+# Description: This file provides the interactions between the front-end website and the
+#              database. It calls functions to execute SQLite queries against the database
+#              with parameters recieved from auctionbase.py and returns the results to be
+#              displayed in HTML. 
+###########################################################################################
 import web
 
 db = web.database(dbn = 'sqlite', db = 'AuctionBase')
