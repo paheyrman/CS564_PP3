@@ -32,6 +32,9 @@
       <b>Currently Winning:</b> {{ Winner }}<br>
       <b>Highest Bid: </b> ${{ Currently }}<br>
     {% endif %}
+    {% if hasBuyPrice %}
+      <b>Buy Now For: </b> ${{ buyPrice }}<br>
+    {% endif %}
     <b>Number of Bids:</b> {{ Number_of_Bids }}
   </p>
 <ul>

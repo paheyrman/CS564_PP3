@@ -67,6 +67,7 @@ class selected_item:
         categories = sqlitedb.getCategoryById(itemID)
         bids = sqlitedb.getBidById(itemID)
         ended = False
+        hasBuyPrice = False
 
         if item.Started <= sqlitedb.getTime() and item.Ends >= sqlitedb.getTime(): status = 'Currently Open'
         elif item.Started > sqlitedb.getTime(): status = 'Has Not Started'
@@ -82,10 +83,13 @@ class selected_item:
             if status == 'Closed' or float(item.Currently) >= float(item.Buy_Price):
                 status = 'Closed'
                 ended = True
+                hasBuyPrice = True
+                buyPrice = item.Buy_Price
         elif status == 'Closed':
             ended = True
+            buyPrice = ""
         
-        return render_template('items.html', id = itemID, bids = bids, Name = item.Name, Category = categories.Category, Ends = item.Ends, Started = item.Started, Number_of_Bids = item.Number_of_Bids, Seller = item.Seller_UserID, Description = item.Description, Currently = item.Currently, noBids = noBids, ended = ended, Status = status, Winner = winner)
+        return render_template('items.html', id = itemID, bids = bids, Name = item.Name, Category = categories.Category, Ends = item.Ends, Started = item.Started, Number_of_Bids = item.Number_of_Bids, Seller = item.Seller_UserID, Description = item.Description, Currently = item.Currently, noBids = noBids, ended = ended, Status = status, Winner = winner, buyPrice = buyPrice, hasBuyPrice = hasBuyPrice)
 
 class curr_time:
     # A simple GET request, to '/currtime'
