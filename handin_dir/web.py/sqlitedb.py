@@ -8,8 +8,6 @@
 #              with parameters recieved from auctionbase.py and returns the results to be
 #              displayed in HTML. 
 ###########################################################################################
-
-
 import web
 
 db = web.database(dbn = 'sqlite', db = 'AuctionBase')
@@ -37,28 +35,24 @@ def getItemById(item_id):
     try: return result[0]
     except IndexError: return None
 
-# Returns all categories of the item identified by item_id
 def getCategoryById(item_id):
     query_string = 'select group_concat(Category,", ") as Category from Categories where ItemID = $itemID'
     result = query(query_string, {'itemID': item_id})
     try: return result[0]
     except IndexError: return None
 
-# Returns information for bids on the item identified by item_id
 def getBidById(item_id):
     query_string = 'select UserID as "ID of Bidder", Time as "Time of Bid", Amount as "Price of Bid" from Bids where ItemID = $itemID'
     result = query(query_string, {'itemID': item_id})
     try: return result
     except IndexError: return None
 
-# Returns all information from the winning bid for the item_id item
 def getWinnerById(item_id):
     query_string = 'select * from Bids where ItemID = $itemID and Amount = (select Max(Amount) from Bids where ItemID = $itemID)'
     result = query(query_string, {'itemID': item_id})
     try: return result[0]
     except IndexError: return None
 
-# Returns a single user specified by the User's ID in the database 
 def getUserById(user_id):
     query_string = 'select * from Users where UserID = $userID'
     result = query(query_string, {'userID': user_id})
@@ -97,8 +91,7 @@ def new_bid(curr_item, curr_user, curr_amount):
 #Close the auction if the item's buy price has been met, update the item's feilds to reflect the change
 def close_auction(curr_item, curr_user, curr_amount):
     t = transaction()
-    try: db.update('Items', where = 'ItemID = $cItem', vars = { 'cItem': curr_item }, ItemID = curr_item, Ends = getTime(),
-                   Currently = curr_amount)
+    try: db.update('Items', where = 'ItemID = $ItemID', ItemID = curr_item, Ends = getTime(), Buy_Price = curr_amount)
     except Exception as bidEx: 
         t.rollback()
         return False
@@ -106,8 +99,6 @@ def close_auction(curr_item, curr_user, curr_amount):
         t.commit()
         return True
 
-# Seach the auction database for items that match the query paramters passed
-# by auctionbase.py
 def auction_search(itemID, userID, category, description, minPrice, maxPrice, status):
 
     if description is None: description = '%%'

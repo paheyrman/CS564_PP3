@@ -10,8 +10,6 @@
 #              auctionbase.py calls functions in sqlitedb.py to execute queries related to
 #              this functionality.
 ###########################################################################################
-
-
 #!/usr/bin/env python
 
 import sys; sys.path.insert(0, 'lib')
@@ -99,18 +97,12 @@ class selected_item:
                 ended = True
                 hasBuyPrice = True
                 buyPrice = item.Buy_Price
-            elif status == 'Currently Open':
-                buyPrice = ""
-            elif status == 'Has Not Started':
-                buyPrice == ""
+            else:
+                hasBuyPrice = True
+                buyPrice = item.Buy_Price
         elif status == 'Closed':
             ended = True
             buyPrice = ""
-        elif status == 'Currently Open':
-            buyPrice = ""
-        elif status == 'Has Not Started':
-            buyPrice == ""
-	    
         
         return render_template('items.html', id = itemID, bids = bids, Name = item.Name, Category = categories.Category, Ends = item.Ends, Started = item.Started, Number_of_Bids = item.Number_of_Bids, Seller = item.Seller_UserID, Description = item.Description, Currently = item.Currently, noBids = noBids, ended = ended, Status = status, Winner = winner, buyPrice = buyPrice, hasBuyPrice = hasBuyPrice)
 
@@ -154,11 +146,10 @@ class select_time:
 
 
 class auction_search:
-    # GET request to the URL search.html that supports the search functions.
+
     def GET(self):
         return render_template('search.html')
 
-    # Fetches the search parameters entered by the user and passes them to sqlitedb.py.
     def POST(self):
         post_params = web.input()
         itemID = post_params['itemID']
@@ -263,7 +254,7 @@ class place_bid:
         if curr_item.Buy_Price is not None:
             if float(Amount) >= float(curr_item.Buy_Price):
                 successful_purchase = 'Congratulations! You have purchased item: %s for amount: %s.' % (curr_item.Name,Amount)
-                return render_template('add_bid.html', message = successful_purchase, add_result = sqlitedb.close_auction(itemID,userID,Amount))
+                return render_template('add_bid.html', message = successful_purchase, add_result = sqlitedb.new_bid(itemID,userID,Amount))
         #Verified no errors exist, place a new bid on the item for the amount specified
         successful_bid = 'Congratulations! You have placed a bid on item: %s of amount: %s.' % (curr_item.Name,Amount)
         return render_template('add_bid.html', message = successful_bid, add_result = sqlitedb.new_bid(itemID,userID,Amount))
@@ -283,8 +274,7 @@ class auction_search:
         minPrice = post_params['minPrice']
         maxPrice = post_params['maxPrice']
         status = post_params['status']
-        # Checks for valid search criteria displays error message if proper fields are 
-        # not populated and passes the input to sqlitedb.py if they are.
+
         if itemID == '' and userID == '' and category == '' and description == '' and minPrice == '' and maxPrice == '':
             return render_template('search.html', message = 'Unable to query the database with no search criteria, please enter one of the following fields and try again.')
         else:
