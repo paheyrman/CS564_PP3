@@ -87,17 +87,7 @@ def new_bid(curr_item, curr_user, curr_amount):
     else: 
         t.commit()
         return True
-
-#Close the auction if the item's buy price has been met, update the item's feilds to reflect the change
-def close_auction(curr_item, curr_user, curr_amount):
-    t = transaction()
-    try: db.update('Items', where = 'ItemID = $ItemID', ItemID = curr_item, Ends = getTime(), Buy_Price = curr_amount)
-    except Exception as bidEx: 
-        t.rollback()
-        return False
-    else: 
-        t.commit()
-        return True
+        
 
 def auction_search(itemID, userID, category, description, minPrice, maxPrice, status):
 
