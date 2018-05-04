@@ -35,24 +35,28 @@ def getItemById(item_id):
     try: return result[0]
     except IndexError: return None
 
+# Returns category based on ID
 def getCategoryById(item_id):
     query_string = 'select group_concat(Category,", ") as Category from Categories where ItemID = $itemID'
     result = query(query_string, {'itemID': item_id})
     try: return result[0]
     except IndexError: return None
 
+# Select bid by ID
 def getBidById(item_id):
     query_string = 'select UserID as "ID of Bidder", Time as "Time of Bid", Amount as "Price of Bid" from Bids where ItemID = $itemID'
     result = query(query_string, {'itemID': item_id})
     try: return result
     except IndexError: return None
 
+# Select winner by itemID and Max Bid
 def getWinnerById(item_id):
     query_string = 'select * from Bids where ItemID = $itemID and Amount = (select Max(Amount) from Bids where ItemID = $itemID)'
     result = query(query_string, {'itemID': item_id})
     try: return result[0]
     except IndexError: return None
 
+# return user info by ID
 def getUserById(user_id):
     query_string = 'select * from Users where UserID = $userID'
     result = query(query_string, {'userID': user_id})
