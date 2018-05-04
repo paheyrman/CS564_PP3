@@ -83,6 +83,7 @@ class selected_item:
         buyPrice = ""
         winner = ""
 
+        #check item status, obtain winner
         if item.Started <= sqlitedb.getTime() and item.Ends >= sqlitedb.getTime(): status = 'Currently Open'
         elif item.Started > sqlitedb.getTime(): status = 'Has Not Started'
         else: status = 'Closed'
@@ -91,6 +92,7 @@ class selected_item:
             noBids = False
             winner = sqlitedb.getWinnerById(itemID).UserID
         
+        #auction has ended when bid price is higher than buy price
         if item.Buy_Price is not None:
             hasBuyPrice = True
             buyPrice = item.Buy_Price
@@ -140,73 +142,6 @@ class select_time:
             print(str(timeEx))
         return render_template('select_time.html', message = update_message)
 
-
-class auction_search:
-
-    def GET(self):
-        return render_template('search.html')
-
-    def POST(self):
-        post_params = web.input()
-        itemID = post_params['itemID']
-        userID = post_params['userID']
-        category = post_params['category']
-        description = post_params['description']
-        minPrice = post_params['minPrice']
-        maxPrice = post_params['maxPrice']
-        status = post_params['status']
-
-        val = sqlitedb.auction_search(itemID, userID, category, description, minPrice, maxPrice, status)
-        return render_template('search.html', search_result = val)
-###########################################################################################
-##########################DO NOT CHANGE ANYTHING BELOW THIS LINE!##########################
-###########################################################################################
-
-if __name__ == '__main__':
-    web.internalerror = web.debugerror
-    app = web.application(urls, globals())
-    app.add_processor(web.loadhook(sqlitedb.enforceForeignKey))
-    app.run()
-
-
-
-class curr_time:
-    # A simple GET request, to '/currtime'
-    #
-    # Notice that we pass in `current_time' to our `render_template' call
-    # in order to have its value displayed on the web page
-    def GET(self):
-        current_time = sqlitedb.getTime()
-        return render_template('curr_time.html', time = current_time)
-
-
-class select_time:
-    # Another GET request, this time to the URL '/selecttime'
-    def GET(self):
-        return render_template('select_time.html')
-
-    # A POST request
-    #
-    # You can fetch the parameters passed to the URL
-    # by calling `web.input()' for **both** POST requests
-    # and GET requests
-    def POST(self):
-        post_params = web.input()
-        MM = post_params['MM']
-        dd = post_params['dd']
-        yyyy = post_params['yyyy']
-        HH = post_params['HH']
-        mm = post_params['mm']
-        ss = post_params['ss']
-        enter_name = post_params['entername']
-
-        selected_time = '%s-%s-%s %s:%s:%s' % (yyyy, MM, dd, HH, mm, ss)
-        update_message = '(Hello, %s. Previously selected time was: %s.)' % (enter_name, sqlitedb.getTime())
-        try: sqlitedb.update_auction_time(selected_time)
-        except Exception as timeEx: 
-            update_message = 'Unable to update time, time value selected is not valid'
-            print(str(timeEx))
-        return render_template('select_time.html', message = update_message)
 
 
 class place_bid:
@@ -271,6 +206,7 @@ class auction_search:
         maxPrice = post_params['maxPrice']
         status = post_params['status']
 
+        # ensure input has been entered
         if itemID == '' and userID == '' and category == '' and description == '' and minPrice == '' and maxPrice == '':
             return render_template('search.html', message = 'Unable to query the database with no search criteria, please enter one of the following fields and try again.')
         else:

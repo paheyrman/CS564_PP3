@@ -98,6 +98,7 @@ def auction_search(itemID, userID, category, description, minPrice, maxPrice, st
     if maxPrice == '': maxPrice = 999999999999999999;
     else: maxPrice = int(maxPrice)
 
+    #query will depend on status of the auction
     if status == 'open':
         query_string = 'select *, group_concat(category,", ") as Category from Items, Categories, CurrentTime where (Categories.ItemID = Items.ItemID) AND (IFNULL($category, "") = "" OR $category = Categories.category) AND (IFNULL($itemID, "") = "" OR $itemID = Items.ItemID) AND (IFNULL($userID, "") = "" OR $userID = Items.Seller_UserID) AND (Items.Description LIKE $description) AND (IFNULL(Items.Currently, Items.First_Bid) >= $minPrice) AND (IFNULL(Items.Currently, Items.First_Bid) <= $maxPrice) AND (Items.Started <= CurrentTime.Time AND Items.Ends >= CurrentTime.Time) group by Items.ItemID'
     if status == 'close':
@@ -110,8 +111,3 @@ def auction_search(itemID, userID, category, description, minPrice, maxPrice, st
     result = query(query_string, {'category': category, 'itemID': itemID, 'userID': userID, 'description': description, 'minPrice': minPrice, 'maxPrice': maxPrice});
     try: return result
     except IndexError: return None
-
-
-
-
-
